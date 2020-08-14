@@ -1,16 +1,14 @@
 import express from 'express'
 import cors from 'cors'
 
-
-
 export class GameBingo {
     usedNumbers = new Array(25)
     calledNumbers = new Array()
 
     constructor() {
         // this.metrix()
-        // this.checkVerticalBingo()
-        this.callNumbers()
+        this.checkVerticalBingo()
+        // this.callNumbers()
         // this.checkHorizontalBingo()
         // this.checkDiagonalBingo()
     }
@@ -20,6 +18,7 @@ export class GameBingo {
             this.setSquareMetrix(i)            
         } 
     }
+    // set Metrix 5*5 run index 0-4
     private async setSquareMetrix(indexSquare: any) {
         let arrMetrix = new Array(0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4);        
         let numberLength = 30      
@@ -30,6 +29,7 @@ export class GameBingo {
         this.usedNumbers[randomNumber] = true;    
         console.log(randomNumber);
     }
+    // random uniq Number
     private generateUniqNumber(botnum:number) {
         var arr = [];
         while(arr.length < botnum) {
@@ -38,6 +38,7 @@ export class GameBingo {
         }
         return arr
     }
+    // funtion main random number Banker
     private async callNumbers() {
         // Mock Case Bingo
         // this.calledNumbers = [
@@ -47,7 +48,13 @@ export class GameBingo {
         //         1,  23, 25, 7,  13, 
         //         29, 21, 17, 18, 24, 
         // ]
-        this.checkBingo()
+        // this.calledNumbers = [
+        //          2, 28, 15, 34, 18, 
+        //          9, 20, 31, 24,  4, 
+        //          19, 27, 10, 1, 30,  
+        //          7,  35, 25, 26, 22, 
+        //          29, 5, 14, 12,  21
+        //         ]
         for(let i=0;i<35;i++) {
             var rand = Math.floor(Math.random() * 35) + 1; // random number between 1 and 30
             if (this.calledNumbers.includes(rand)) {
@@ -60,11 +67,13 @@ export class GameBingo {
         this.checkBingo()
         this.metrixDemo()
     }
+    // metrix check bingo line 
     private async checkBingo() {
         this.checkVerticalBingo()
         this.checkDiagonalBingo()
         this.checkHorizontalBingo()
     }
+    // metrix check Vertical line
     private async checkVerticalBingo() {
         for (let i = 0; i < 5; i++) {
             let sq1 = i
@@ -79,21 +88,24 @@ export class GameBingo {
     private async checkLinesBingo(sq1:number, sq2: number, sq3: any, sq4: number, sq5: number) {   
         // Mocknumber
         // sq1 = 3, sq2 = 2, sq3 = 31, sq4 = 1, sq5 = 31
+        // check bingo line free
          if (this.calledNumbers.includes(sq1) && 
             this.calledNumbers.includes(sq2) && 
             sq3 == 'Free' && 
             this.calledNumbers.includes(sq4) && 
             this.calledNumbers.includes(sq5)) {
-            console.log("Bingo 1 ", sq1, sq2, sq3, sq4, sq5);
+            console.log("Bingo You win ", sq1, sq2, sq3, sq4, sq5);
         }
+        // check bingo line normal
         else if (this.calledNumbers.includes(sq1) &&
             this.calledNumbers.includes(sq2) &&
             this.calledNumbers.includes(sq3) &&
             this.calledNumbers.includes(sq4) &&
             this.calledNumbers.includes(sq5)) {
-            console.log("Bingo 2 ", sq1, sq2, sq3, sq4, sq5);
+            console.log("Bingo You win ", sq1, sq2, sq3, sq4, sq5);
         }
     }
+    // metrix show demo table from funtion callNumber
     private async metrixDemo() {
         let  letters = new Array(5);
         for (let i = 0; i < 5; i++) { 
@@ -109,6 +121,7 @@ export class GameBingo {
         }
         console.table(letters);
     }
+    // metrix check Diagonal bingo line
     private async checkDiagonalBingo() {
         let sq1 =0,sq2 =0,sq3 = 0,sq4 = 0,sq5 = 0
         for (var i = 0; i < 2; i++) {
@@ -132,13 +145,14 @@ export class GameBingo {
         }
         this.checkLinesBingo(sq1,sq2,sq3,sq4,sq5)
     }
+    // metrix check Horizontal line
     private checkHorizontalBingo() {
         let j = 0;
         let sq1 =0,sq2 =0,sq3 = 0,sq4 = 0,sq5 = 0
         for (var i = 0; i < 5; i++) {
             switch(i) {
                 case 0: 
-                    sq1 = i;
+                    sq1 = i
                     sq2 = i + 1
                     sq3 = i + 2
                     sq4 = i + 3
