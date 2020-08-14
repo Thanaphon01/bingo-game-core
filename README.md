@@ -18,4 +18,4 @@ npm install typescript
 
 npm install
 
-npm start ---> run nodemon bingo-game.ts
+npm start ---> run nodemon index.ts
