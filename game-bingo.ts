@@ -52,6 +52,7 @@ export class GameBingo {
         //         1,  23, 25, 7,  13, 
         //         29, 21, 17, 18, 24, 
         // ]
+        
         for(let i=0;i<30;i++) {
             var rand = Math.floor(Math.random() * 60) + 1; // random number between 1 and 60
             if (this.calledNumbers.includes(rand)) {
@@ -82,7 +83,7 @@ export class GameBingo {
         // this.checkHorizontalBingo()
     }
     // metrix check Vertical line
-    
+
     private async checkVerticalBingo() {
         for (let i = 0; i < 5; i++) {
             let sq1 = i
