@@ -9,8 +9,8 @@ export class GameServer {
   rows = 5
   players = new Array()
   playersNums = 4  // Count Player in room
-  countDown = 5
-  delay = 2000
+  countDown = 2
+  delay = 2
 
   constructor() {
     // this.main()
@@ -119,7 +119,7 @@ export class GameServer {
       let winnerCount = 0
       randomNumber.push(randomAllNumbers[round])
       console.log("Number of random : ", randomNumber);
-      for(let m = 0; m < this.playersNums; m++) {
+      for(let m = 0; m < 1; m++) {
         console.log("players : ",this.players[m].bingosheet);
         // let demo = [
         //   [ 2, 20, 33, 38, 55 ],
@@ -129,6 +129,7 @@ export class GameServer {
         //   [ 3, 21, 34, 47, 60 ]
         // ]
         // let randomNumber = [2,20,33,38,6,1,12,3]
+        // let {bingoCount, markedNumbers,markWinHorizontal, markWinVertical, markWinDiagonalLR, markWinDiagonalRL, markWinCorrner, winlines} = this.getBingoCount(demo,randomNumber) 
         let {bingoCount, markedNumbers,markWinHorizontal, markWinVertical, markWinDiagonalLR, markWinDiagonalRL, markWinCorrner, winlines} = this.getBingoCount(this.players[m].bingosheet,randomNumber)        
         this.players[m].winCountlines = bingoCount
         this.players[m].winlines = winlines
@@ -140,10 +141,7 @@ export class GameServer {
 
         if(bingoCount > 0) {
           winnerCount++;
-          // console.log("Winner players :",this.players[m]);
-        }
-        // console.log("players ID: ", this.players[m].players);
-        // console.log("bingocount and mark :",bingoCount,markedNumbers);                
+        }            
       }
       if(winnerCount > 0) {
         hasWinner = true       
@@ -171,7 +169,6 @@ export class GameServer {
       return result
     }
   }
-
   // Find Players If have Lucky number in sheets
   async calculatorLucky() {
     for(let m = 0; m < this.playersNums; m++) {
@@ -192,19 +189,20 @@ export class GameServer {
         sumWinlinesCount += this.players[m].winCountlines          
       }
       if(this.players[m].winCountlines === 2){
-        sumWinlinesCount += this.players[m].winCountlines          
+        sumWinlinesCount += this.players[m].winCountlines                  
       }
       if(this.players[m].winCountlines === 3){
         sumWinlinesCount += this.players[m].winCountlines          
       }
     }
-    let sumcountlinewin =  sumWinlinesCount 
+    let sumcountlinewin =  sumWinlinesCount     
     return sumcountlinewin
   }
 
   // Find Sum Players If lose
   async countLosesLine() {
     let sumLoselinesCount = 0
+    let findMaxWinLine = await this.calculatorMaxLines()
     for(let m = 0; m < this.playersNums; m++) {
       if(this.players[m].winCountlines === 0){
         sumLoselinesCount++       
@@ -213,13 +211,16 @@ export class GameServer {
     let sumCountPlayerLose =  sumLoselinesCount 
     return sumCountPlayerLose
   }
-  
+  async callSumLosePlayer() {
+    let countLosesLines = this.countLosesLine()
+  }
   // State calculator balance
   async calculatorState() {
     let lucky = 2
     let findMaxWinLine = await this.calculatorMaxLines()
-    let countWinslines = await this.countWinsline()
+    let sumtWinslines = await this.countWinsline()
     let countLosesLines = await this.countLosesLine()
+
     for(let m = 0; m < this.playersNums; m++) {
       if(this.players[m].winCountlines === 0) {
           let balance = this.players[m].wallet.balance - (this.players[m].wallet.buyIn * findMaxWinLine)
@@ -228,18 +229,71 @@ export class GameServer {
       if(this.players[m].winCountlines === 1) {
         let waitCallLucky = await this.calculatorLucky()      
         if(waitCallLucky) {
-          // console.log("1",this.players[m].wallet.buyIn * findMaxWinLine);
-          // console.log("2",this.players[m].winCountlines * lucky);
-          // console.log("3",countWinslines);
-          // console.log("Bet 3 :", bet);
-          let bet = ((this.players[m].wallet.buyIn * findMaxWinLine) * this.players[m].winCountlines * lucky ) / countWinslines      
+          console.log("1",this.players[m].wallet.buyIn * findMaxWinLine);
+          console.log("2",this.players[m].winCountlines * lucky);
+          console.log("3",sumtWinslines);
+          console.log("4", countLosesLines);
+          console.log("5", (this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines );
+          let bet =  (((this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines ) * this.players[m].winCountlines ) / sumtWinslines  
+          console.log("Bet  :", bet);
           let balance = this.players[m].wallet.balance + bet
           this.players[m].wallet.balance = balance
         } else {
-          // console.log("11",this.players[m].wallet.buyIn * countLosesLines, this.players[m].players);
-          // console.log("22",this.players[m].winCountlines + "/" +  countWinslines);
-          // console.log("33",countWinslines);
-          let bet = ((this.players[m].wallet.buyIn * countLosesLines) * this.players[m].winCountlines ) / countWinslines          
+          console.log("11",this.players[m].wallet.buyIn * countLosesLines, this.players[m].players);
+          console.log("22",this.players[m].winCountlines + "/" +  sumtWinslines);
+          console.log("33",sumtWinslines);
+          console.log("44",countLosesLines);
+          console.log("55", (this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines );
+          let bet =  (((this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines ) * this.players[m].winCountlines ) / sumtWinslines  
+          console.log("Bet  :", bet);
+          let balance = this.players[m].wallet.balance + bet
+          this.players[m].wallet.balance = balance
+        }
+      }
+      if(this.players[m].winCountlines === 2) {
+        let waitCallLucky = await this.calculatorLucky()      
+        if(waitCallLucky) {
+          console.log("1",this.players[m].wallet.buyIn * findMaxWinLine);
+          console.log("2",this.players[m].winCountlines * lucky);
+          console.log("3",sumtWinslines);
+          console.log("4", countLosesLines);
+          console.log("5", (this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines );
+          let bet = (((this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines ) * this.players[m].winCountlines ) / sumtWinslines           
+          console.log("Bet  :", bet);
+          let balance = this.players[m].wallet.balance + bet
+          this.players[m].wallet.balance = balance
+        } else {
+          console.log("11",this.players[m].wallet.buyIn * countLosesLines, this.players[m].players);
+          console.log("22",this.players[m].winCountlines + "/" +  sumtWinslines);
+          console.log("33",sumtWinslines);
+          console.log("44",countLosesLines);
+          console.log("55", (this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines );
+          let bet =  (((this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines ) * this.players[m].winCountlines ) / sumtWinslines   
+          console.log("Bet  :", bet);       
+          let balance = this.players[m].wallet.balance + bet
+          this.players[m].wallet.balance = balance
+        }
+      }
+      if(this.players[m].winCountlines === 3) {
+        let waitCallLucky = await this.calculatorLucky()      
+        if(waitCallLucky) {
+          console.log("1",this.players[m].wallet.buyIn * findMaxWinLine);
+          console.log("2",this.players[m].winCountlines + "/" +  sumtWinslines);
+          console.log("3",sumtWinslines);
+          console.log("4", countLosesLines);
+          console.log("5", (this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines );
+          let bet = (((this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines ) * this.players[m].winCountlines ) / sumtWinslines           
+          console.log("Bet  :", bet);
+          let balance = this.players[m].wallet.balance + bet
+          this.players[m].wallet.balance = balance
+        } else {
+          console.log("11",this.players[m].wallet.buyIn * countLosesLines, this.players[m].players);
+          console.log("22",this.players[m].winCountlines + "/" +  sumtWinslines);
+          console.log("33",sumtWinslines);
+          console.log("44",countLosesLines);
+          console.log("55", (this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines );
+          let bet =  (((this.players[m].wallet.buyIn * findMaxWinLine) * countLosesLines ) * this.players[m].winCountlines ) / sumtWinslines   
+          console.log("Bet  :", bet);       
           let balance = this.players[m].wallet.balance + bet
           this.players[m].wallet.balance = balance
         }
@@ -266,7 +320,6 @@ export class GameServer {
       array[currentIndex] = array[randomIndex];
       array[randomIndex] = temporaryValue;
     }
-  
     return array;
   }
   
