@@ -9,8 +9,8 @@ export class GameServer {
   rows = 5
   players = new Array()
   playersNums = 4  // Count Player in room
-  countDown = 2
-  delay = 1
+  countDown = 5
+  delay = 2000
 
   constructor() {
     // this.main()
@@ -54,19 +54,7 @@ export class GameServer {
     }
     return bingoSheet
   }
-  
-  private async startCountdown(seconds: number) {
-    let counter = seconds;
-    const interval = setInterval(() => {
-      console.log(counter);
-      if (counter == 1 ) {
-        clearInterval(interval);
-        console.log('Start Game Bingo ...!');     
-      }
-      counter--;
-    }, 1000);
-  }
-  
+    
   private async generateSession() {
     let number = Math.random() // 0.9394456857981651
     number.toString(36); // '0.xtis06h6'
@@ -76,7 +64,6 @@ export class GameServer {
   private async playersSheet() {
     let seconds = 5
     let count = 0
-    // const countdown =  await this.startCountdown(seconds)
     let prefix = 100
     for(let m = 0; m < this.playersNums; m++) {
        let ranBalance = Math.floor(Math.random() * 1000) + 600
@@ -104,7 +91,6 @@ export class GameServer {
       console.log("Start bingo sheet: ",this.players[m].players,this.players[m].wallet);
     }
     console.log("Player :::: ",this.players);
-    
     return this.players
   }
   private async playGames() {
@@ -118,6 +104,7 @@ export class GameServer {
         } 
       }, 1000)
   }
+  
   private async main() {
     this.playersSheet()
     let randomNumber = []
@@ -132,17 +119,17 @@ export class GameServer {
       let winnerCount = 0
       randomNumber.push(randomAllNumbers[round])
       console.log("Number of random : ", randomNumber);
-      for(let m = 0; m < 2; m++) {
+      for(let m = 0; m < this.playersNums; m++) {
         console.log("players : ",this.players[m].bingosheet);
-        let demo = [
-          [ 2, 20, 33, 38, 55 ],
-          [ 6, 23, 35, 42, 57 ],
-          [ 1, 18, 0, 41, 51 ],
-          [ 12, 14, 31, 43, 59 ],
-          [ 3, 21, 34, 47, 60 ]
-        ]
-        let randomNumber = [2,20,33,38,6,1,12,3]
-        let {bingoCount, markedNumbers,markWinHorizontal, markWinVertical, markWinDiagonalLR, markWinDiagonalRL, markWinCorrner, winlines} = this.getBingoCount(demo,randomNumber)        
+        // let demo = [
+        //   [ 2, 20, 33, 38, 55 ],
+        //   [ 6, 23, 35, 42, 57 ],
+        //   [ 1, 18, 0, 41, 51 ],
+        //   [ 12, 14, 31, 43, 59 ],
+        //   [ 3, 21, 34, 47, 60 ]
+        // ]
+        // let randomNumber = [2,20,33,38,6,1,12,3]
+        let {bingoCount, markedNumbers,markWinHorizontal, markWinVertical, markWinDiagonalLR, markWinDiagonalRL, markWinCorrner, winlines} = this.getBingoCount(this.players[m].bingosheet,randomNumber)        
         this.players[m].winCountlines = bingoCount
         this.players[m].winlines = winlines
         this.players[m].markWinHorizontal = markWinHorizontal
@@ -150,13 +137,13 @@ export class GameServer {
         this.players[m].markWinDiagonalLR = markWinDiagonalLR
         this.players[m].markWinDiagonalRL = markWinDiagonalRL
         this.players[m].markWinCorrner = markWinCorrner
-        this.players[m].luckynumber = 12
+
         if(bingoCount > 0) {
           winnerCount++;
-          console.log("Winner players :",this.players[m]);
+          // console.log("Winner players :",this.players[m]);
         }
-        console.log("players ID: ", this.players[m].players);
-        console.log("bingocount and mark :",bingoCount,markedNumbers);                
+        // console.log("players ID: ", this.players[m].players);
+        // console.log("bingocount and mark :",bingoCount,markedNumbers);                
       }
       if(winnerCount > 0) {
         hasWinner = true       
@@ -165,10 +152,10 @@ export class GameServer {
       }
     }
     this.calculatorState()
-    // this.calculatorWinsLose()
-
   }
-  async calculatorWinsLose() {
+
+  // Find Players Max Winlines 
+  async calculatorMaxLines() { 
     let findMaxWinLine = []
     for(let m = 0; m < this.playersNums; m++) {
         findMaxWinLine.push(this.players[m].winCountlines)
@@ -177,18 +164,18 @@ export class GameServer {
     let result = Math.max.apply(Math,findMaxWinLine)    
     
     if(waitCallLucky) {      
-      console.log("findfindMaxWinLine1 ",result);
+      // console.log("findfindMaxWinLine1 ",result);
       return result * 2
     } else {
-      console.log("findfindMaxWinLine2 ",result);
+      // console.log("findfindMaxWinLine2 ",result);
       return result
     }
   }
 
+  // Find Players If have Lucky number in sheets
   async calculatorLucky() {
     for(let m = 0; m < this.playersNums; m++) {
         for(let j = 0 ; j< (Object.values(this.players[m].winlines).length); j++ ) {
-          // console.log(">>>>LC ",Object.values(this.players[m][this.players[m].winlines[j]]));
           if(Object.values(this.players[m][this.players[m].winlines[j]]).includes(this.players[m].luckynumber)) {
               return Object.values(this.players[m][this.players[m].winlines[j]]).includes(this.players[m].luckynumber)
           }
@@ -196,6 +183,8 @@ export class GameServer {
       }      
     }
   }
+
+  // Find Sum Winlines
   async countWinsline() {
     let sumWinlinesCount = 0
     for(let m = 0; m < this.playersNums; m++) {
@@ -212,6 +201,8 @@ export class GameServer {
     let sumcountlinewin =  sumWinlinesCount 
     return sumcountlinewin
   }
+
+  // Find Sum Players If lose
   async countLosesLine() {
     let sumLoselinesCount = 0
     for(let m = 0; m < this.playersNums; m++) {
@@ -222,34 +213,32 @@ export class GameServer {
     let sumCountPlayerLose =  sumLoselinesCount 
     return sumCountPlayerLose
   }
+  
+  // State calculator balance
   async calculatorState() {
     let lucky = 2
-    let findMaxWinLine = await this.calculatorWinsLose()
+    let findMaxWinLine = await this.calculatorMaxLines()
     let countWinslines = await this.countWinsline()
     let countLosesLines = await this.countLosesLine()
     for(let m = 0; m < this.playersNums; m++) {
-      if(this.players[m].winCountlines === 0) {        
-          // console.log(">>>",this.players[m].wallet.buyIn * findMaxWinLine);
-          // console.log(">>1", findMaxWinLine);
+      if(this.players[m].winCountlines === 0) {
           let balance = this.players[m].wallet.balance - (this.players[m].wallet.buyIn * findMaxWinLine)
           this.players[m].wallet.balance = balance
       }      
       if(this.players[m].winCountlines === 1) {
         let waitCallLucky = await this.calculatorLucky()      
         if(waitCallLucky) {
-          console.log("1",this.players[m].wallet.buyIn * findMaxWinLine);
-          console.log("2.5", findMaxWinLine);
-          console.log("2",this.players[m].winCountlines *lucky);
-          console.log("33",countWinslines);
-          let bet = ((this.players[m].wallet.buyIn * findMaxWinLine) * this.players[m].winCountlines *lucky ) / countWinslines      
-          console.log("Bet 3 :", bet);
-              
+          // console.log("1",this.players[m].wallet.buyIn * findMaxWinLine);
+          // console.log("2",this.players[m].winCountlines * lucky);
+          // console.log("3",countWinslines);
+          // console.log("Bet 3 :", bet);
+          let bet = ((this.players[m].wallet.buyIn * findMaxWinLine) * this.players[m].winCountlines * lucky ) / countWinslines      
           let balance = this.players[m].wallet.balance + bet
           this.players[m].wallet.balance = balance
         } else {
-          console.log("11",this.players[m].wallet.buyIn * countLosesLines, this.players[m].players);
-          console.log("22",this.players[m].winCountlines + "/" +  countWinslines);
-          console.log("33",countWinslines);
+          // console.log("11",this.players[m].wallet.buyIn * countLosesLines, this.players[m].players);
+          // console.log("22",this.players[m].winCountlines + "/" +  countWinslines);
+          // console.log("33",countWinslines);
           let bet = ((this.players[m].wallet.buyIn * countLosesLines) * this.players[m].winCountlines ) / countWinslines          
           let balance = this.players[m].wallet.balance + bet
           this.players[m].wallet.balance = balance
@@ -258,70 +247,6 @@ export class GameServer {
     }
     console.log("End Round... ", this.players);
   }
-  // async calculatorState() {
-  //     let lucky = 2
-  //     let countPlayersLose = 0
-  //     let countPlayerWins = 0
-  //     let sumWinlinesCount = 0
-  //     let findMaxWinLine = await this.calculatorWinsLose()
-      
-  //     for (const user of this.players) {
-  //       // console.log("Information Player : ",user); 
-  //       if(user.winCountlines === 3) {
-  //         countPlayerWins++
-  //         let found_index = this.players.findIndex(item => item.winCountlines === 3)
-  //         if(found_index !== -1) {
-  //           let waitCallLucky = await this.calculatorLucky()
-  //           let bet =  user.wallet.buyIn * 3
-  //           if(waitCallLucky) {
-  //             let balance = user.wallet.balance + (bet * lucky)
-  //             this.players[found_index].wallet.balance = balance 
-  //           } else {
-  //             let balance = user.wallet.balance + bet
-  //             this.players[found_index].wallet.balance = balance
-  //           }   
-  //         }
-  //       }
-  //       else if(user.winCountlines === 2) {
-  //         let found_index = this.players.findIndex(item => item.winCountlines === 2)
-  //         if(found_index !== -1) {
-  //           let waitCallLucky = await this.calculatorLucky()
-  //           let bet =  user.wallet.buyIn * 1.5
-  //           if(waitCallLucky) {              
-  //             let balance = user.wallet.balance + (bet * lucky)
-  //             this.players[found_index].wallet.balance = balance 
-  //           } else {
-  //             let balance = user.wallet.balance + bet
-  //             this.players[found_index].wallet.balance = balance
-  //           }
-  //         }
-  //       }
-  //       else if(user.winCountlines === 1) {
-  //         sumWinlinesCount = user.winCountlines
-  //         countPlayerWins++
-  //         let found_index = this.players.findIndex(item => item.winCountlines === 1)
-  //         if(found_index !== -1) {
-  //           let waitCallLucky = await this.calculatorLucky()            
-  //           let bet =  user.wallet.buyIn * 1
-  //           if(waitCallLucky) {
-  //             let balance = user.wallet.balance + (bet * lucky)
-  //             this.players[found_index].wallet.balance = balance 
-  //           } else {
-  //             let balance = user.wallet.balance + bet
-  //             this.players[found_index].wallet.balance = balance
-  //           }
-  //         }
-  //       } 
-  //       else if(user.winCountlines === 0) {
-  //         let found_index = this.players.findIndex(item => item.winCountlines === 0)
-  //         if(found_index !== -1) {
-  //             let balance = user.wallet.balance - (user.wallet.buyIn * findMaxWinLine)
-  //             this.players[found_index].wallet.balance = balance
-  //         }
-  //       }      
-  //     }
-  //     console.log("End Round... ", this.players);
-  // }
 
   randomUniqNumbers(number:number) {
     let arr =  Array.from(Array(number), (_, i) => i + 1)
@@ -344,16 +269,9 @@ export class GameServer {
   
     return array;
   }
-
-  checkBingo() {
-    // this.checkVerticalBingo()
-    // this.checkHerizontalBingo()
-    // this.checkDiagonalBingo()
-  }
   
   getBingoCount(table:any,numbers:any) {
     let bingoCount = 0
-    let bingoWins = false
     let markedNumbers = []
     let markWinHorizontal = []
     let markWinVertical = []
@@ -375,8 +293,6 @@ export class GameServer {
       }
       if(markCount === this.rows) {                
         bingoCount++;
-        bingoWins = true
-        console.log("Hori>>>>>>");
         markWinHorizontal = markHorizontal  
         winlines.push("markWinHorizontal")      
       }
@@ -395,10 +311,8 @@ export class GameServer {
       }
       if(markCount === this.rows) {
         bingoCount++;
-        bingoWins = true
         markWinVertical = markVertical
         winlines.push("markWinVertical")  
-        console.log("vertical>>>>>>>>>>");
       }
     }
     // Case Diagonal left -> right
@@ -413,10 +327,8 @@ export class GameServer {
         }
       if(markCount === this.rows) {
         bingoCount++;
-        bingoWins = true
         markWinDiagonalLR = markDiagonalLeftRight
         winlines.push("markWinDiagonalLR")  
-        console.log("diagonalLR>>>>>");
         
       }
     }
@@ -432,10 +344,8 @@ export class GameServer {
        }
        if(markCount === this.rows) {
         bingoCount++;
-        bingoWins = true
         markWinDiagonalRL = markDiagonalRightLeft
         winlines.push("markWinDiagonalRL")  
-        console.log("diagonalRL>>>>>");
        }
      }
     // Case Corners 
@@ -464,13 +374,10 @@ export class GameServer {
       }
       if(markCount === 4) {
         bingoCount++;
-        bingoWins = true
         markWinCorrner = markCorrner
         winlines.push("markWinCorrner")
-        console.log("Corner>>>>>");
       }
     }    
-
     markedNumbers = markedNumbers.filter((value,index,self) => self.indexOf(value) === index)        
     return  {bingoCount, markedNumbers, markWinHorizontal, markWinVertical, markWinDiagonalLR, markWinDiagonalRL, markWinCorrner, winlines};
   }
