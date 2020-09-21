@@ -9,8 +9,8 @@ export class GameServer {
   rows = 5
   players = new Array()
   playersNums = 4  // Count Player in room
-  countDown = 2
-  delay = 2
+  countDown = 5
+  delay = 2000
 
   constructor() {
     // this.main()
@@ -82,6 +82,7 @@ export class GameServer {
             "buyIn": prefix,
             "lastUpdate": date
         },
+        "markedNumbers": [],
         "markWinHorizontal": [0],
         "markWinVertical": [0],
         "markWinDiagonalLR": [0],
@@ -119,7 +120,7 @@ export class GameServer {
       let winnerCount = 0
       randomNumber.push(randomAllNumbers[round])
       console.log("Number of random : ", randomNumber);
-      for(let m = 0; m < 1; m++) {
+      for(let m = 0; m < this.playersNums; m++) {
         console.log("players : ",this.players[m].bingosheet);
         // let demo = [
         //   [ 2, 20, 33, 38, 55 ],
@@ -138,6 +139,7 @@ export class GameServer {
         this.players[m].markWinDiagonalLR = markWinDiagonalLR
         this.players[m].markWinDiagonalRL = markWinDiagonalRL
         this.players[m].markWinCorrner = markWinCorrner
+        this.players[m].markedNumbers = markedNumbers
 
         if(bingoCount > 0) {
           winnerCount++;
@@ -385,7 +387,7 @@ export class GameServer {
         
       }
     }
-     // Case Diagonal right -> left
+    // Case Diagonal right -> left
     markCount = 0
     let markDiagonalRightLeft = []
     for(let m = this.rows-1; m >= 0; m--) { 
