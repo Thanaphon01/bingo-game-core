@@ -17,14 +17,13 @@ export class GameBingo {
     private async metrix() {
         for (let i = 0; i < 25; i++) { 
             if(i === 12) continue;
-            this.setSquareMetrix(i)            
+            this.setSquareMetrix(i)
         } 
     }
     // set Metrix 5*5 run index 0-4
     private async setSquareMetrix(indexSquare: any) {
-        let arrMetrix = new Array(0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4); 
+        let arrMetrix = new Array(0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4,0,1,2,3,4);
         console.log(arrMetrix);
-               
         let randomNumber = arrMetrix[indexSquare] 
         while (this.usedNumbers[randomNumber] == true) {
             randomNumber = (arrMetrix[indexSquare]) * 10 + await this.generateUniqNumber();
